@@ -1,0 +1,19 @@
+{
+  "name": "rack-label-studio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "test": "node --test src/*.test.js",
+    "dev:cloud": "vite --host 0.0.0.0"
+  },
+  "dependencies": {
+    "vite": "^7.1.0",
+    "qrcode": "^1.5.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "jszip": "^3.10.1",
+    "jsbarcode": "^3.12.1"
+  }
+}
