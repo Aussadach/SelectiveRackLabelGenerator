@@ -1,6 +1,6 @@
 # งานพร้อมรันต่อใน GitHub workspace
 
-Root ของ Git repo จริงคือโฟลเดอร์ `QRcodeGenerator` ข้างในมี `web/`, `.github/workflows/pages.yml`, `WEB_README.md`, `docs/` และ Python เดิม. ยังไม่มี remote และยังไม่ได้ push. เก็บไฟล์ Python ที่แก้และ staged ไว้เดิมตามเดิม.
+Root ของ Git repo จริงคือโฟลเดอร์ `QRcodeGenerator` ข้างในมี `web/`, `.github/workflows/pages.yml`, `WEB_README.md`, `docs/` และ Python เดิม. GitHub repository: https://github.com/Aussadach/SelectiveRackLabelGenerator. เก็บไฟล์ Python ที่แก้และ staged ไว้เดิมตามเดิม.
 
 ## คำสั่งที่ให้คุณรัน
 
@@ -40,3 +40,4 @@ SheetJS ดาวน์โหลดจาก official CDN `cdn.sheetjs.com` ส�
 ## GitHub Pages
 
 หลัง commit/push โค้ดแล้ว ให้เลือก Settings → Pages → Source: GitHub Actions. Workflow รองรับ main/master และ workflow_dispatch. ติดตั้งด้วย npm install หากยังไม่มี lockfile; เมื่อมี lockfile จะใช้ npm ci. ส่งออกเฉพาะ web/dist เป็นเว็บ static. ไม่มีการเผยแพร่จากเครื่องเดิม.
+

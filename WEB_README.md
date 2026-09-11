@@ -15,7 +15,7 @@ npm run dev
 
 ## GitHub Pages
 
-Push repository นี้ไป GitHub ตั้งค่า Settings → Pages → Source เป็น GitHub Actions. Workflow `.github/workflows/pages.yml` จะ build/test และเผยแพร่เมื่อ push ไป main/master หรือกด Run workflow. หากใช้ branch อื่นให้เปลี่ยน branches ใน workflow. ยังไม่ได้ push หรือเผยแพร่จากเครื่องนี้.
+Push repository นี้ไป GitHub ตั้งค่า Settings → Pages → Source เป็น GitHub Actions. Workflow `.github/workflows/pages.yml` จะ build/test และเผยแพร่เมื่อ push ไป main/master หรือกด Run workflow. หากใช้ branch อื่นให้เปลี่ยน branches ใน workflow. Repository: https://github.com/Aussadach/SelectiveRackLabelGenerator
 
 ไฟล์ build ใช้ relative asset paths รองรับ `https://USER.github.io/REPOSITORY/`. ไม่มี backend, API key, login หรือฐานข้อมูล. Libraries รวมอยู่ใน build; ข้อมูล CSV/Excel และภาพไม่ได้ส่งไป server. กดบันทึกงานเพื่อดาวน์โหลด JSON ก่อนปิดหน้า ไม่มี autosave.
 
@@ -34,4 +34,5 @@ SIDE S เป็นกติกาใหม่สำหรับช่องเ�
 ## ทำต่อใน GitHub Codespaces
 
 ดูคำสั่งและรายการตรวจสอบใน docs/GITHUB_HANDOFF.md. การ install/build และ UI ยังไม่ได้ตรวจเนื่องจาก npm registry เชื่อมต่อไม่ได้ในเครื่องพัฒนา.
+
 
