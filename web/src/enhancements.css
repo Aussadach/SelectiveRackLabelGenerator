@@ -1,0 +1,17 @@
+.upload-help{margin:-12px 0 20px;padding:12px 16px;border:1px solid #cfe1e7;border-radius:7px;background:#edf7f8;color:#426578;font-size:14px}
+.toolbox{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:22px}
+.toolbox button{min-height:52px;padding:8px;text-align:left}
+.row-nav{display:flex;align-items:center;gap:8px}
+.row-nav button{padding:5px 10px}
+.aisle{cursor:grab}
+.aisle rect{fill:#d9caa8;stroke:#aa9565;stroke-width:2}
+.aisle path{stroke:#fff;stroke-width:3;stroke-dasharray:16 10}
+.aisle text{fill:#66552e;font-size:13px;font-weight:700;pointer-events:none}
+.top-rack{cursor:grab}
+.top-rack .rack-cell path{fill:#dce9f0;stroke:#587b93}
+.top-rack .rack-cell:nth-of-type(even) path:first-child{fill:#edf5f8}
+.export-options{display:grid;grid-template-columns:minmax(240px,1fr) 320px auto;align-items:end;gap:24px;margin-bottom:18px;padding:20px 22px;border:1px solid #dce4eb;border-radius:9px;background:white}
+.export-options h3,.export-options p,.export-options label{margin:0}
+.export-options p{color:#718697;font-size:13px;margin-top:5px}
+.export-options select{margin-top:4px}
+@media(max-width:900px){.export-options{grid-template-columns:1fr}.toolbox{grid-template-columns:1fr}}
