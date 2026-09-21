@@ -6,6 +6,9 @@ export function rotatePoint(gx,gy,size,rotation){const n=size-1;return rotation=
 export function unrotatePoint(gx,gy,size,rotation){const n=size-1;return rotation===0?[gx,gy]:rotation===1?[gy,n-gx]:rotation===2?[n-gx,n-gy]:[n-gy,gx];}
 export function isoPoint(gx,gy,size,rotation){const [rx,ry]=rotatePoint(gx,gy,size,rotation);return {x:size*42+70+(rx-ry)*42,y:55+(rx+ry)*22};}
 export function gridAtIsoPoint(x,y,size,rotation){const a=(x-(size*42+70))/42,b=(y-55)/22;const [gx,gy]=unrotatePoint(Math.round((a+b)/2),Math.round((b-a)/2),size,rotation);return {gx,gy};}
+export function topPoint(gx,gy,size,rotation){const [rx,ry]=rotatePoint(gx,gy,size,rotation);return {x:45+rx*42,y:45+ry*42};}
+export function gridAtTopPoint(x,y,size,rotation){const [gx,gy]=unrotatePoint(Math.round((x-45)/42),Math.round((y-45)/42),size,rotation);return {gx,gy};}
+export function hasAdjacentPath(unit,paths){return paths.some(p=>Math.abs(p.gx-unit.gx)+Math.abs(p.gy-unit.gy)===1);}
 export function placementIdentity(units,grid,forcedRow){const neighbor=units.find(u=>Math.abs(u.gx-grid.gx)+Math.abs(u.gy-grid.gy)===1),row=forcedRow??neighbor?.row??nextAvailableRow(units),bay=Math.max(0,...units.filter(u=>u.row===row).map(u=>u.bay))+1;return {row,bay};}
 export function assignSelectionRow(units,ids,row){const selected=new Set(ids),items=units.filter(u=>selected.has(u.id)).sort((a,b)=>a.gy-b.gy||a.gx-b.gx),start=Math.max(0,...units.filter(u=>!selected.has(u.id)&&u.row===row).map(u=>u.bay))+1;items.forEach((u,i)=>{u.row=row;u.bay=start+i;});return items;}
 export function gridLine(from,to){const points=[],dx=Math.abs(to.gx-from.gx),dy=Math.abs(to.gy-from.gy),sx=from.gx<to.gx?1:-1,sy=from.gy<to.gy?1:-1;let x=from.gx,y=from.gy,err=dx-dy;for(;;){points.push({gx:x,gy:y});if(x===to.gx&&y===to.gy)break;const e=2*err;if(e>-dy){err-=dy;x+=sx;}if(e<dx){err+=dx;y+=sy;}}return points;}
