@@ -1,11 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {defaultState,locations,normalize,code,csv,labelGroups} from './model.js';
+import {defaultState,locations,normalize,code,csv,labelGroups,isoPoint,gridAtIsoPoint,placementIdentity,assignSelectionRow,gridLine} from './model.js';
 test('unit racks generate unique padded codes and capacity overrides',()=>{const s=defaultState();assert.equal(locations(s).length,18);s.units[0].capacities[1]=1;s.units[0].capacities[2]=0;const r=locations(s);assert.equal(r.length,15);assert.equal(code(r[0]),'ANV1_A_01_1_S');assert.equal(new Set(r.map(code)).size,r.length);});
 test('case insensitive headers, padded bays and additional columns',()=>{assert.deepEqual(normalize([['Plant','Row','Bay','Level','Side','ignored'],['ps1','a','001','02','r','x']]),[{PLANT:'PS1',ROW:'A',BAY:'01',LEVEL:'2',SIDE:'R'}]);});
 test('rejects malformed and duplicate locations',()=>{const h=['PLANT','ROW','BAY','LEVEL','SIDE'];assert.throws(()=>normalize([h,['P','A','1','0','L']]));assert.throws(()=>normalize([h,['P','A','1','1','L'],['P','A','01','1','L']]));assert.throws(()=>normalize([['ANV1_A_01_L']]));});
 test('actual repository CSV can import without losing location rows',()=>{const text=fs.readFileSync('../Resource/ตารางป้ายเก่าใหม่2.csv','utf8');const table=text.trim().split(/\r?\n/).map(l=>l.split(','));const result=normalize(table);assert.equal(result.length,table.length-1);assert.equal(code(result[0]),'PS1_A_12_1_L');assert.ok(csv(result).startsWith('\ufeffPLANT,ROW,BAY,LEVEL,SIDE'));});
 test('supports different level counts for each unit rack',()=>{const s=defaultState();s.units[0].levels=1;s.units[1].levels=5;assert.equal(locations(s).filter(r=>r.ROW==='A').length,18);});
 test('groups labels by plant row bay and side in level order',()=>{const groups=labelGroups([{PLANT:'P',ROW:'A',BAY:'01',LEVEL:'2',SIDE:'L'},{PLANT:'P',ROW:'A',BAY:'01',LEVEL:'1',SIDE:'L'},{PLANT:'P',ROW:'A',BAY:'01',LEVEL:'1',SIDE:'R'}]);assert.equal(groups.length,2);assert.deepEqual(groups[0].items.map(r=>r.LEVEL),['1','2']);});
+test('isometric tile center snaps to the same grid cell in every rotation',()=>{for(let rotation=0;rotation<4;rotation++)for(const [gx,gy] of [[0,0],[4,7],[13,13]]){const p=isoPoint(gx,gy,14,rotation);assert.deepEqual(gridAtIsoPoint(p.x,p.y,14,rotation),{gx,gy});}});
+test('drag placement keeps forced row even beside another row',()=>{const units=[{gx:1,gy:1,row:'A',bay:1},{gx:3,gy:1,row:'B',bay:1}];assert.deepEqual(placementIdentity(units,{gx:2,gy:1},'A'),{row:'A',bay:2});});
+test('multi row edit renumbers selected bays after existing units',()=>{const units=[{id:1,gx:0,gy:0,row:'C',bay:4},{id:2,gx:2,gy:1,row:'A',bay:9},{id:3,gx:1,gy:1,row:'B',bay:7}];assignSelectionRow(units,[2,3],'C');assert.deepEqual(units.map(u=>[u.id,u.row,u.bay]),[[1,'C',4],[2,'C',6],[3,'C',5]]);});
+test('fast pointer movement fills every grid tile between events',()=>{assert.deepEqual(gridLine({gx:1,gy:2},{gx:5,gy:2}),[{gx:1,gy:2},{gx:2,gy:2},{gx:3,gy:2},{gx:4,gy:2},{gx:5,gy:2}]);assert.deepEqual(gridLine({gx:2,gy:1},{gx:2,gy:4}),[{gx:2,gy:1},{gx:2,gy:2},{gx:2,gy:3},{gx:2,gy:4}]);});
 
