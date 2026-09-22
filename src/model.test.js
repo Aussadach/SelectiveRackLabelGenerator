@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {defaultState,locations,normalize,code,csv,labelGroups,isoPoint,gridAtIsoPoint,topPoint,gridAtTopPoint,hasAdjacentPath,extendLevelColors,levelColor,rowNameAt,placementIdentity,assignSelectionRow,gridLine,contentsAtGrids,toggleItemSelection,removeSelectedItems,subplantRows,subplantCsv,printPixels,convertPrintSize} from './model.js';
+import {defaultState,defaultLabel,locations,normalize,code,csv,labelGroups,isoPoint,gridAtIsoPoint,topPoint,gridAtTopPoint,hasAdjacentPath,extendLevelColors,levelColor,rowNameAt,placementIdentity,assignSelectionRow,gridLine,contentsAtGrids,toggleItemSelection,removeSelectedItems,subplantRows,subplantCsv,printPixels,convertPrintSize,alignmentGuides} from './model.js';
 test('unit racks generate unique padded codes and capacity overrides',()=>{const s=defaultState();assert.equal(locations(s).length,18);s.units[0].capacities[1]=1;s.units[0].capacities[2]=0;const r=locations(s);assert.equal(r.length,15);assert.equal(code(r[0]),'ANV1_A_01_1_S');assert.equal(new Set(r.map(code)).size,r.length);});
 test('case insensitive headers, padded bays and additional columns',()=>{assert.deepEqual(normalize([['Plant','Row','Bay','Level','Side','ignored'],['ps1','a','001','02','r','x']]),[{PLANT:'PS1',ROW:'A',BAY:'01',LEVEL:'2',SIDE:'R'}]);});
 test('rejects malformed and duplicate locations',()=>{const h=['PLANT','ROW','BAY','LEVEL','SIDE'];assert.throws(()=>normalize([h,['P','A','1','0','L']]));assert.throws(()=>normalize([h,['P','A','1','1','L'],['P','A','01','1','L']]));assert.throws(()=>normalize([['ANV1_A_01_L']]));});
@@ -23,4 +23,6 @@ test('deleting multiple selected layers preserves unselected layer order',()=>{c
 test('subplant export matches the supplied workbook columns and values',()=>{const input=[{PLANT:'ANV2',ROW:'A',BAY:'01',LEVEL:'1',SIDE:'L'}];assert.deepEqual(subplantRows(input),[{SubPlant:'ANV2',RackCode:'ANV2_A_01_1_L',TopReserveBy:'',BottomReserveBy:''}]);assert.equal(subplantCsv(input),'\ufeffSubPlant,RackCode,TopReserveBy,BottomReserveBy\r\nANV2,ANV2_A_01_1_L,,');});
 test('physical label size converts to exact pixels at the selected PPI',()=>{assert.deepEqual(printPixels(7.62,2.54,'cm',300),{width:900,height:300});assert.deepEqual(printPixels(3,1,'in',203),{width:609,height:203});});
 test('switching print units preserves the same physical dimensions',()=>{assert.deepEqual(convertPrintSize(3,1,'in','cm'),{width:7.62,height:2.54});assert.deepEqual(convertPrintSize(7.62,2.54,'cm','in'),{width:3,height:1});});
+test('default location fields expose independent label visibility and size',()=>{const fields=defaultLabel().components.filter(c=>['PLANT','ROW','BAY','LEVEL','SIDE'].includes(c.type));assert.equal(fields.length,5);assert.ok(fields.every(c=>c.showLabel===true&&c.labelSize===14));});
+test('alignment guides include every matching edge and center axis',()=>{const moving={id:1,x:100,y:50,w:100,h:80},others=[{id:2,x:100,y:200,w:100,h:80},{id:3,x:250,y:50,w:50,h:80}];assert.deepEqual(alignmentGuides(moving,others),{vertical:[100,150,200],horizontal:[50,90,130]});});
 
