@@ -11,8 +11,9 @@ Static web application สำหรับออกแบบผัง Selective R
 - ตรวจ Rack ที่ไม่มีทางเดินก่อนออกแบบหรือส่งออกป้าย
 - นำเข้า CSV, XLS หรือ XLSX ที่มีคอลัมน์ `PLANT`, `ROW`, `BAY`, `LEVEL`, `SIDE`
 - ออกแบบป้ายด้วย Layer สำหรับสี, Rectangle, ลูกศร, QR, Code128, ข้อความ และรูปภาพ
+- กำหนดขนาดพิมพ์จริงเป็นเซนติเมตรหรือนิ้ว เลือก 150, 203, 300 หรือ 600 PPI และดูขนาด Pixel ที่คำนวณได้ (ค่าเริ่มต้น 300 PPI)
 - เลือก Layer หลายรายการด้วย `Ctrl/Shift + Click` แล้วลบพร้อมกันด้วยปุ่มบนหน้าจอหรือปุ่ม `Delete`
-- ส่งออก SVG, PNG, ZIP, CSV, Excel และพิมพ์เป็น PDF จาก browser
+- ส่งออก SVG, PNG, ZIP, CSV, Excel และพิมพ์เป็น PDF จาก browser โดย SVG/Print เก็บขนาดจริงและ PNG ใช้จำนวน Pixel ตาม PPI
 - รวมป้ายที่มี Plant, Row, Bay และ Side เดียวกันตาม Level ได้ทั้งแนวตั้งและแนวนอน
 - บันทึกและเปิดงานต่อด้วยไฟล์ JSON
 
@@ -63,6 +64,15 @@ Repository นี้เป็น Web application เท่านั้นแล�
 - `SIDE`: `L`, `R` หรือ `S`
 
 รหัส Location ถูกสร้างในรูปแบบ `PLANT_ROW_BAY_LEVEL_SIDE` โดยเติม Bay ให้มีอย่างน้อย 2 หลัก.
+
+## รูปแบบไฟล์ส่งออก
+
+หน้า **ตรวจสอบ & ส่งออก** เลือกรูปแบบ CSV/Excel ได้ 2 แบบ:
+
+- รูปแบบเดียวกับไฟล์ `Location Rack subplant.xlsx`: `SubPlant`, `RackCode`, `TopReserveBy`, `BottomReserveBy` โดยสองคอลัมน์ Reserve เว้นว่างไว้สำหรับกรอกต่อ
+- รูปแบบรายละเอียด Location: `PLANT`, `ROW`, `BAY`, `LEVEL`, `SIDE`, `Location_Code`
+
+Excel แบบ SubPlant ใช้ชื่อ Sheet `Sheet1` และเรียงคอลัมน์ตรงกับไฟล์ตัวอย่างที่แนบมา.
 
 ## การ Deploy
 
