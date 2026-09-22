@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {defaultState,locations,normalize,code,csv,labelGroups,isoPoint,gridAtIsoPoint,topPoint,gridAtTopPoint,hasAdjacentPath,extendLevelColors,levelColor,placementIdentity,assignSelectionRow,gridLine} from './model.js';
+import {defaultState,locations,normalize,code,csv,labelGroups,isoPoint,gridAtIsoPoint,topPoint,gridAtTopPoint,hasAdjacentPath,extendLevelColors,levelColor,rowNameAt,placementIdentity,assignSelectionRow,gridLine,contentsAtGrids} from './model.js';
 test('unit racks generate unique padded codes and capacity overrides',()=>{const s=defaultState();assert.equal(locations(s).length,18);s.units[0].capacities[1]=1;s.units[0].capacities[2]=0;const r=locations(s);assert.equal(r.length,15);assert.equal(code(r[0]),'ANV1_A_01_1_S');assert.equal(new Set(r.map(code)).size,r.length);});
 test('case insensitive headers, padded bays and additional columns',()=>{assert.deepEqual(normalize([['Plant','Row','Bay','Level','Side','ignored'],['ps1','a','001','02','r','x']]),[{PLANT:'PS1',ROW:'A',BAY:'01',LEVEL:'2',SIDE:'R'}]);});
 test('rejects malformed and duplicate locations',()=>{const h=['PLANT','ROW','BAY','LEVEL','SIDE'];assert.throws(()=>normalize([h,['P','A','1','0','L']]));assert.throws(()=>normalize([h,['P','A','1','1','L'],['P','A','01','1','L']]));assert.throws(()=>normalize([['ANV1_A_01_L']]));});
@@ -15,4 +15,7 @@ test('fast pointer movement fills every grid tile between events',()=>{assert.de
 test('top view tile center snaps to the same grid cell in every rotation',()=>{for(let rotation=0;rotation<4;rotation++)for(const [gx,gy] of [[0,0],[4,7],[13,13]]){const p=topPoint(gx,gy,14,rotation);assert.deepEqual(gridAtTopPoint(p.x,p.y,14,rotation),{gx,gy});}});
 test('rack is usable only when a path touches one of its four sides',()=>{const unit={gx:4,gy:4};assert.equal(hasAdjacentPath(unit,[]),false);assert.equal(hasAdjacentPath(unit,[{gx:5,gy:5}]),false);assert.equal(hasAdjacentPath(unit,[{gx:4,gy:5}]),true);});
 test('new rack levels receive distinct generated colors used by the renderer',()=>{const palette=extendLevelColors(['#ff0000','#00ff00'],8,()=>.25);assert.equal(palette.length,8);assert.equal(new Set(palette).size,8);assert.ok(palette.every(c=>/^#[0-9a-f]{6}$/i.test(c)));assert.equal(levelColor(8,palette),palette[7]);});
+test('automatic row names continue from Z to AA and from AZ to AAA',()=>{assert.deepEqual([0,25,26,27,51,52,53,77].map(rowNameAt),['A','Z','AA','AB','AZ','AAA','AAB','AAZ']);});
+test('new isolated rack uses the next extended row name',()=>{const units=Array.from({length:52},(_,i)=>({gx:0,gy:0,row:rowNameAt(i),bay:1}));assert.deepEqual(placementIdentity(units,{gx:10,gy:10}),{row:'AAA',bay:1});});
+test('grid selection includes racks and pathways together',()=>{const result=contentsAtGrids([{id:1,gx:1,gy:1},{id:2,gx:4,gy:4}],[{gx:2,gy:1},{gx:5,gy:5}],[{gx:1,gy:1},{gx:2,gy:1}]);assert.deepEqual(result,{unitIds:[1],pathKeys:['2,1']});});
 
