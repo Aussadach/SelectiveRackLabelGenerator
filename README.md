@@ -1,59 +1,71 @@
-# Rack Label Studio
+# Selective Rack Label Generator
 
-แอปใหม่อยู่ใน `web/` ส่วน Python เดิมอยู่ที่ root ของ repo นี้.
+Static web application สำหรับออกแบบผัง Selective Rack, สร้างรหัส Location และออกแบบป้าย QR/Barcode โดยทำงานใน browser ทั้งหมด ข้อมูลและรูปภาพของผู้ใช้ไม่ถูกส่งไป backend.
 
-## เริ่มใช้งาน
+ใช้งานเวอร์ชันล่าสุดได้ที่ [GitHub Pages](https://aussadach.github.io/SelectiveRackLabelGenerator/).
 
-ใช้ Node.js 22.12 ขึ้นไป แล้วรันในโฟลเดอร์ `web`:
+## ความสามารถหลัก
+
+- วาง Unit Rack และทางเดินบนกริดแบบ Isometric หรือ Top view พร้อม Zoom และหมุนมุมมอง
+- กำหนด Plant, Row, Bay, Level และจำนวนตำแหน่ง `L/R` หรือ `S` ของแต่ละ Level
+- ตรวจ Rack ที่ไม่มีทางเดินก่อนออกแบบหรือส่งออกป้าย
+- นำเข้า CSV, XLS หรือ XLSX ที่มีคอลัมน์ `PLANT`, `ROW`, `BAY`, `LEVEL`, `SIDE`
+- ออกแบบป้ายด้วย Layer สำหรับสี, Rectangle, ลูกศร, QR, Code128, ข้อความ และรูปภาพ
+- เลือก Layer หลายรายการด้วย `Ctrl/Shift + Click` แล้วลบพร้อมกันด้วยปุ่มบนหน้าจอหรือปุ่ม `Delete`
+- ส่งออก SVG, PNG, ZIP, CSV, Excel และพิมพ์เป็น PDF จาก browser
+- รวมป้ายที่มี Plant, Row, Bay และ Side เดียวกันตาม Level ได้ทั้งแนวตั้งและแนวนอน
+- บันทึกและเปิดงานต่อด้วยไฟล์ JSON
+
+## เริ่มพัฒนา
+
+ต้องใช้ Node.js 22.12 ขึ้นไป จาก root ของ repository ให้รัน:
 
 ```sh
 npm install
 npm run dev
 ```
 
-เปิด URL ที่แสดงใน terminal. ใช้ `npm test` ตรวจตรรกะ Location และ `npm run build` สร้าง static files ใน `web/dist`. ต้องเปิดผ่าน HTTP server ไม่ใช่ดับเบิลคลิก index.html.
+คำสั่งตรวจสอบและ build:
 
-## GitHub Pages
+```sh
+npm test
+npm run build
+```
 
-Push repository นี้ไป GitHub ตั้งค่า Settings → Pages → Source เป็น GitHub Actions. Workflow `.github/workflows/pages.yml` จะ build/test และเผยแพร่เมื่อ push ไป main/master หรือกด Run workflow. หากใช้ branch อื่นให้เปลี่ยน branches ใน workflow. Repository: https://github.com/Aussadach/SelectiveRackLabelGenerator
+ไฟล์ static ที่ build แล้วอยู่ใน `dist/`. แอปต้องเปิดผ่าน HTTP server เช่น Vite หรือ GitHub Pages.
 
-ไฟล์ build ใช้ relative asset paths รองรับ `https://USER.github.io/REPOSITORY/`. ไม่มี backend, API key, login หรือฐานข้อมูล. Libraries รวมอยู่ใน build; ข้อมูล CSV/Excel และภาพไม่ได้ส่งไป server. กดบันทึกงานเพื่อดาวน์โหลด JSON ก่อนปิดหน้า ไม่มี autosave.
+## โครงสร้าง Repository
 
-## การใช้งาน
+```text
+.
+├── .github/workflows/pages.yml  # Test, build และ deploy GitHub Pages
+├── examples/                    # CSV ตัวอย่างสำหรับ regression test
+├── src/
+│   ├── main.js                  # UI, state และ interaction
+│   ├── model.js                 # Rack/location model และ validation
+│   ├── labels.js                # SVG/PNG/QR/Barcode renderer
+│   ├── model.test.js            # Unit tests
+│   ├── style.css                # Styles หลัก
+│   └── enhancements.css         # Styles ของ Rack builder และ feature เพิ่มเติม
+├── index.html
+├── package.json
+└── vite.config.js
+```
 
-1. ตั้ง Plant, เพิ่ม Row/Zone, Bay และ Level; สลับ Top/Side/Isometric. Top view ลากแถวเพื่อจัดผัง. คลิกช่องแล้วเลือกปิดช่อง, 1 ตำแหน่ง S, หรือ 2 ตำแหน่ง L/R. ใช้กับทุกช่องในแถวได้.
-2. หรือนำเข้า CSV/XLS/XLSX แผ่นงานแรก ต้องมี PLANT, ROW, BAY, LEVEL, SIDE (ไม่สนตัวพิมพ์เล็กใหญ่). รายการนำเข้าใช้สร้างป้ายโดยตรง ไม่สร้างผัง Rack จากข้อมูลที่ไม่มีพิกัด. กด “ใช้ Location จาก Layout” เพื่อกลับมาใช้ผัง.
-3. ออกแบบป้าย: อัปโหลด PNG/JPEG/WebP ได้ไม่เกิน 10 MB. ภาพถูกย่อไม่เกิน 2000 px แล้วเพิ่มเป็น Layer บนป้าย สามารถลาก ปรับขนาด และจัดลำดับหน้า–หลังได้เหมือนองค์ประกอบอื่น.
-4. เพิ่ม/ลาก/ปรับขนาด Rectangle, สีตามชั้น, ลูกศร, QR, Code128 Barcode, PLANT, ROW, BAY, LEVEL, SIDE, LOCATION. จัดชั้นหน้าหลัง เปลี่ยนสีและพื้นหลังโปร่งใสได้. QR/Barcode มีพื้นขาวและ quiet zone ภายในเพื่ออ่านได้. เมนู “ตั้งค่าสีแต่ละ Level” จะแสดงตามจำนวนชั้นสูงสุด; ชั้นใหม่รับสีที่แตกต่างจาก Palette เดิมอัตโนมัติ.
-5. ส่งออก CSV, Excel, SVG, PNG 2x, ZIP รวม PNG หรือพิมพ์/Save as PDF ผ่าน browser. ป้ายในหน้าพิมพ์กว้าง 190 mm บน A4; ปรับ scale ใน print dialog ตามขนาดสติกเกอร์. ทดสอบพิมพ์และสแกนจริงก่อนผลิตจำนวนมาก โดยเฉพาะเมื่อวาง layer ทับ QR หรือย่อขนาดมาก.
+Repository นี้เป็น Web application เท่านั้นและไม่มี Python runtime หรือ backend.
 
-## ความสามารถของผังและการส่งออก
+## รูปแบบไฟล์นำเข้า
 
-- หน้าออกแบบพื้นที่เป็นกริด Isometric: เลือก Unit Rack แล้วคลิกวาง หรือเลือกทางเดินแล้วกดค้างลากเส้นทาง
-- Unit Rack จะ Snap เข้ากึ่งกลาง Tile เสมอ กดค้างแล้วลากเพื่อสร้าง Rack ต่อเนื่องในแนวเดียวกันได้ แม้ตัวชี้เมาส์เคลื่อนข้ามหลาย Tile
-- Rack ที่ลากในครั้งเดียวจะเป็น Row เดียวกันและรับหมายเลข Bay ต่อเนื่อง แม้ลากไปใกล้ Rack ของ Row อื่น จากนั้นแก้ Row, Bay, Level และจำนวนตำแหน่งของแต่ละ Level ได้
-- เครื่องมือเลือกสามารถลากกรอบครอบ Rack และทางเดินพร้อมกัน แล้วกด Delete เพื่อลบรายการที่เลือกได้; เมื่อเลือก Rack หลายตัวสามารถเปลี่ยน Row พร้อมรันหมายเลข Bay ใหม่ตามตำแหน่งได้
-- ระหว่างลากสร้างจะแสดง Rack หรือทางเดินแบบโปร่งใสก่อนวางจริง และระหว่างลากรื้อถอนจะแสดงชิ้นส่วนที่จะลบเป็นสีส้ม
-- Rack ที่ยังไม่มีทางเดินติดอย่างน้อยหนึ่งด้านจะแสดงเป็นสีแดงจนกว่าจะเพิ่มทางเดิน
-- ก่อนเข้าออกแบบป้ายหรือส่งออก ระบบจะแจ้งเมื่อยังมี Rack สีแดง พร้อมตัวเลือกกลับไปเพิ่มทางเดินหรือ Ignore ทั้งหมด; เมื่อผังถูกแก้ไข ระบบจะตรวจใหม่ในการไปหน้าดังกล่าวครั้งถัดไป
-- ลากผ่าน Rack และทางเดินหลายรายการเพื่อเลือกพร้อมกันได้ โดยรายการที่เลือกจะ Highlight ทันที และกดปุ่ม Delete เพื่อลบได้
-- ชื่อ Row อัตโนมัติรัน A–Z แล้วต่อด้วย AA–AZ, AAA–AAZ และเพิ่มจำนวนตัว A นำหน้าไปเรื่อย ๆ
-- สลับระหว่าง Isometric และ Top view ได้ โดยหมุนได้ 4 ทิศทางทั้งสองมุมมอง
-- Canvas จะรักษาตำแหน่งที่เลื่อนไว้เมื่อเลือก วาง ลบ หรือแก้ไข Rack
-- ปรับพื้นที่กริดได้ตั้งแต่ 8 × 8 ถึง 60 × 60 Tiles โดยระบบจะไม่ยอมลดขนาดจนตัด Rack หรือทางเดินที่วางไว้
-- Canvas ของผังและป้าย Zoom ได้ตั้งแต่ 50–200% และมีปุ่มกลับสู่ขนาดพอดี
-- หน้าออกแบบพื้นที่และหน้าออกแบบป้ายมี Reset แยกกัน พร้อมถามก่อนล้างงานในส่วนนั้น
-- การเปลี่ยนขนาดป้ายเปลี่ยนเฉพาะ Canvas; Component คงตำแหน่งและขนาดเดิม
-- Preview ป้ายและ Export ใช้ SVG renderer ชุดเดียวกัน เพื่อให้ Font ลูกศร ขนาด และตำแหน่งตรงกัน
-- ป้ายรวมจัดกลุ่มตาม PLANT + ROW + BAY + SIDE แล้วต่อ Level จากน้อยไปมากได้ทั้งแนวตั้งและแนวนอน
-- ดาวน์โหลด `location-import-template.csv` จากหน้าสร้างพื้นที่เพื่อใช้เป็นแบบกรอกข้อมูล
+ดาวน์โหลด CSV ตัวอย่างจากปุ่ม **ไฟล์ตัวอย่าง** ในแอป หรือดู [examples/location-import-example.csv](examples/location-import-example.csv). ค่าที่รองรับ:
 
-SIDE S เป็นกติกาใหม่สำหรับช่องเดี่ยว ต้องตรวจว่าระบบปลายทางรองรับ. QR ยังเป็นรหัสตำแหน่ง ไม่ใช่ระบบบันทึกรับเข้า/จ่ายออกหรือจัดการ stock. Row รองรับ 1–30 bays, 1–12 levels. ชุดป้ายจำนวนมากอาจใช้เวลาและหน่วยความจำมากจากภาพ PNG 2x.
+- `PLANT` และ `ROW`: ตัวอักษรอังกฤษ ตัวเลข หรือ `-`
+- `BAY` และ `LEVEL`: จำนวนเต็มตั้งแต่ 1 ขึ้นไป
+- `SIDE`: `L`, `R` หรือ `S`
 
-รายละเอียดวิเคราะห์โค้ดเดิม: `docs/CODE_REVIEW.md`.
+รหัส Location ถูกสร้างในรูปแบบ `PLANT_ROW_BAY_LEVEL_SIDE` โดยเติม Bay ให้มีอย่างน้อย 2 หลัก.
 
-## ทำต่อใน GitHub Codespaces
+## การ Deploy
 
-ดูคำสั่งและรายการตรวจสอบใน docs/GITHUB_HANDOFF.md. การ install/build และ UI ยังไม่ได้ตรวจเนื่องจาก npm registry เชื่อมต่อไม่ได้ในเครื่องพัฒนา.
+Workflow [pages.yml](.github/workflows/pages.yml) ทำงานเมื่อ push ไปที่ `master` หรือ `main` โดยติดตั้ง dependency, รัน test, build และ deploy โฟลเดอร์ `dist/` ไป GitHub Pages.
 
-
+ข้อมูล Rack, CSV/Excel, รูปภาพ และไฟล์ JSON ถูกประมวลผลภายใน browser. ควรบันทึกไฟล์งาน JSON ก่อนปิดหน้า เพราะแอปไม่มี autosave หรือฐานข้อมูล.

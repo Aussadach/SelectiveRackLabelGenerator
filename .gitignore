@@ -1,20 +1,8 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
+# Node/Vite generated files
+node_modules/
 dist/
-wheels/
-*.egg-info
+.npm-cache/
 
-# Virtual environments
-.venv
-qr_labels_final
-
-
-# Static web
-web/node_modules/
-web/dist/
-web/.npm-cache/
-
-# Generated legacy label images
-ANV_LABEL/
+# Local editor and OS files
+.DS_Store
+Thumbs.db
