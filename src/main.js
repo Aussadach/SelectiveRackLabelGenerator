@@ -56,7 +56,7 @@ function changeSingle(u,key,value){if(key==='row'&&!value)throw Error('Row ห�
 function applyMultiRow(){const value=$('#multi-row').value.trim().toUpperCase();if(!value)throw Error('Row ห้ามว่าง');mutate(()=>{assignSelectionRow(s.units,selectedUnits,value);touchLayout();});}
 function removeSelected(){mutate(()=>{const paths=new Set(selectedPaths);s.units=s.units.filter(u=>!selectedUnits.includes(u.id));s.paths=s.paths.filter(p=>!paths.has(gridKey(p)));selectedUnits=[];selectedPaths=[];touchLayout();});}
 function deleteSelectedComponents(){mutate(()=>{s.components=removeSelectedItems(s.components,selectedComponents);selectedComponents=s.components.length?[s.components.at(-1).id]:[];});}
-function addUnit(g,row,axis='x'){const identity=placementIdentity(s.units,g,row),u={id:Date.now()+Math.random(),gx:g.gx,gy:g.gy,axis,...identity,levels:3,capacities:{}};if(!canPlaceUnit(u,s.units,s.paths,s.gridSize))return null;s.units.push(u);touchLayout();return u;}
+function addUnit(g,row,axis='x'){const identity=placementIdentity(s.units,g,row,axis),u={id:Date.now()+Math.random(),gx:g.gx,gy:g.gy,axis,...identity,levels:3,capacities:{}};if(!canPlaceUnit(u,s.units,s.paths,s.gridSize))return null;s.units.push(u);touchLayout();return u;}
 function gridFromEvent(e){return rackScene?.gridFromEvent(e)??null;}
 const validGrid=g=>g.gx>=0&&g.gx<s.gridSize&&g.gy>=0&&g.gy<s.gridSize;
 const gridKey=g=>`${g.gx},${g.gy}`;
