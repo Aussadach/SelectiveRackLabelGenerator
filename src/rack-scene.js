@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {hasAdjacentPath,rackColumns,unitFootprint} from './model.js';
+import {hasAdjacentPath,rackColumns,rackDirection,unitFootprint} from './model.js';
 
 const C={floor:0x10283b,grid:0x315068,path:0xd0b36a,blue:0x086fe3,blueTop:0x1888ff,darkBlue:0x043f94,orange:0xff8315,silver:0xdce5eb,yellow:0xffe21b,black:0x202020,red:0xd93b3b,gold:0xf4bd3f,teal:0x52d8c8};
 const material=(color,extra={})=>new THREE.MeshStandardMaterial({color,roughness:.62,metalness:.18,...extra});
@@ -26,7 +26,7 @@ function rackGroup(unit,stateName='normal'){
   for(let level=1;level<=levels;level++){const capacity=Number(unit.capacities?.[level]??2);if(capacity===2){addBin(group,-.46,.35+(level-1)*.82,.78);addBin(group,.46,.35+(level-1)*.82,.78);}else if(capacity===1)addBin(group,0,.35+(level-1)*.82,.78);}
   for(const x of [-width/2,width/2])for(const z of [-depth/2,depth/2])addGuard(group,x,z);
   if(unit.id!=='preview')addLabel(group,`${unit.row}-${String(unit.bay).padStart(2,'0')}`,height);
-  if(unit.axis==='y')group.rotation.y=Math.PI/2;
+  group.rotation.y=rackDirection(unit)*Math.PI/2;
   const cells=unitFootprint(unit),center=cells.reduce((sum,c)=>({x:sum.x+c.gx+.5,z:sum.z+c.gy+.5}),{x:0,z:0});group.position.set(center.x/cells.length,0,center.z/cells.length);applyRackState(group,stateName);return group;
 }
 function applyRackState(group,name){const set=materials[name]??materials.normal;group.traverse(object=>{if(object.isMesh&&object.userData.role)object.material=set[object.userData.role]??set.bin;});}
@@ -47,7 +47,7 @@ export function createRackScene(container,{state,view='iso',rotation=0,zoom=1,se
   function hitFromEvent(event){setRay(event);for(const hit of raycaster.intersectObjects(root.children,true)){let object=hit.object;while(object){if(object.userData.unitId!=null)return {unitId:object.userData.unitId};if(object.userData.pathKey)return {pathKey:object.userData.pathKey};object=object.parent;}}return {};}
   function setSelection(unitIds,pathKeys){const units=new Set(unitIds),paths=new Set(pathKeys);for(const unit of state.units)applyRackState(unitGroups.get(unit.id),units.has(unit.id)?'active':hasAdjacentPath(unit,state.paths)?'normal':'invalid');for(const [key,mesh] of pathMeshes)mesh.material=paths.has(key)?sceneMaterials.pathActive:sceneMaterials.path;renderer.render(scene,camera);}
   function setErase(unitIds,pathKeys){for(const unit of state.units)applyRackState(unitGroups.get(unit.id),unitIds.has(unit.id)?'erase':selectedSet.has(unit.id)?'active':hasAdjacentPath(unit,state.paths)?'normal':'invalid');for(const [key,mesh] of pathMeshes)mesh.material=pathKeys.has(key)?sceneMaterials.pathErase:selectedPathSet.has(key)?sceneMaterials.pathActive:sceneMaterials.path;renderer.render(scene,camera);}
-  function setPreview(kind,points,{axis='x'}={}){disposeObject(previewRoot);previewRoot.clear();for(const point of points){if(kind==='path'){const mesh=addBox(previewRoot,.94,.055,.94,point.gx+.5,.02,point.gy+.5,'beam');mesh.material=sceneMaterials.pathPreview;}else{const ghost=rackGroup({id:'preview',gx:point.gx,gy:point.gy,axis,row:'',bay:0,levels:3,capacities:{}},'preview');previewRoot.add(ghost);}}renderer.render(scene,camera);}
+  function setPreview(kind,points,{axis='x',capacity=2}={}){disposeObject(previewRoot);previewRoot.clear();for(const point of points){if(kind==='path'){const mesh=addBox(previewRoot,.94,.055,.94,point.gx+.5,.02,point.gy+.5,'beam');mesh.material=sceneMaterials.pathPreview;}else{const direction=axis==='y'?1:0,ghost=rackGroup({id:'preview',gx:point.gx,gy:point.gy,axis,direction,row:'',bay:0,levels:3,capacities:{1:capacity,2:capacity,3:capacity}},'preview');previewRoot.add(ghost);}}renderer.render(scene,camera);}
   function dispose(){observer.disconnect();disposeObject(scene);renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();}
   return {gridFromEvent,hitFromEvent,setSelection,setErase,setPreview,dispose,canvas:renderer.domElement};
 }
