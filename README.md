@@ -6,8 +6,9 @@ Static web application สำหรับออกแบบผัง Selective R
 
 ## ความสามารถหลัก
 
-- วาง Unit Rack และทางเดินบนกริดแบบ Isometric หรือ Top view พร้อม Zoom และหมุนมุมมอง
-- แสดง Rack เป็น Parametric SVG: เสาและค้ำยันเหล็ก คานฐาน กระบะทรงสอบพร้อมขารอง 3 จุด และ Guard ชั้นล่าง โดยจำนวนกระบะเปลี่ยนตามค่า 2 ตำแหน่ง (L/R) หรือ 1 ตำแหน่ง (S)
+- วาง Unit Rack และทางเดินในฉาก Three.js 3D ด้วยกล้อง Orthographic พร้อม Isometric 4 มุมแบบ Snap, Top view และ Zoom
+- Rack L/R ใช้ 2 ช่องกริดตามแนว Row ส่วน Rack Single ใช้ 1 ช่อง พร้อมตรวจการชนจาก Footprint จริง
+- โมเดล Rack เป็น Parametric 3D: เสาและค้ำยันเหล็ก คานฐาน กระบะทรงสอบพร้อมขารอง 3 จุด และ Guard ชั้นล่าง
 - กำหนด Plant, Row, Bay, Level และจำนวนตำแหน่ง `L/R` หรือ `S` ของแต่ละ Level
 - ตรวจ Rack ที่ไม่มีทางเดินก่อนออกแบบหรือส่งออกป้าย
 - นำเข้า CSV, XLS หรือ XLSX ที่มีคอลัมน์ `PLANT`, `ROW`, `BAY`, `LEVEL`, `SIDE`
@@ -49,7 +50,7 @@ npm run build
 ├── src/
 │   ├── main.js                  # UI, state และ interaction
 │   ├── model.js                 # Rack/location model และ validation
-│   ├── rack-view.js             # Parametric SVG renderer สำหรับ Rack และกระบะ
+│   ├── rack-scene.js            # Three.js scene, 3D Rack geometry, camera และ raycasting
 │   ├── labels.js                # SVG/PNG/QR/Barcode renderer
 │   ├── model.test.js            # Unit tests
 │   ├── style.css                # Styles หลัก

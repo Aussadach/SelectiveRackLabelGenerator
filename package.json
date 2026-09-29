@@ -18,6 +18,7 @@
     "qrcode": "^1.5.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "jszip": "^3.10.1",
-    "jsbarcode": "^3.12.1"
+    "jsbarcode": "^3.12.1",
+    "three": "^0.180.0"
   }
 }
