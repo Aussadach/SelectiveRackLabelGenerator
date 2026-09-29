@@ -11,6 +11,9 @@ export function isoPoint(gx,gy,size,rotation){const [rx,ry]=rotatePoint(gx,gy,si
 export function gridAtIsoPoint(x,y,size,rotation){const a=(x-(size*42+70))/42,b=(y-55)/22;const [gx,gy]=unrotatePoint(Math.round((a+b)/2),Math.round((b-a)/2),size,rotation);return {gx,gy};}
 export function topPoint(gx,gy,size,rotation){const [rx,ry]=rotatePoint(gx,gy,size,rotation);return {x:45+rx*42,y:45+ry*42};}
 export function gridAtTopPoint(x,y,size,rotation){const [gx,gy]=unrotatePoint(Math.round((x-45)/42),Math.round((y-45)/42),size,rotation);return {gx,gy};}
+export function finiteGridCell(cell,size){const gx=Math.floor(Number(cell?.gx)),gy=Math.floor(Number(cell?.gy));return Number.isFinite(gx)&&Number.isFinite(gy)&&gx>=0&&gy>=0&&gx<size&&gy<size?{gx,gy}:null;}
+export function zoomTargetCorrection(before,after){return {x:Number(before.x)-Number(after.x),z:Number(before.z)-Number(after.z)};}
+export function clampRackZoom(value){return Math.max(.5,Math.min(2,Number(value)||1));}
 export function rackColumns(unit){let enabled=false;for(let level=1;level<=Math.max(1,Number(unit?.levels)||1);level++){const capacity=Number(unit?.capacities?.[level]??2);if(capacity>0)enabled=true;if(capacity===2)return 2;}return enabled?1:1;}
 export function rackDirection(unit){const value=Number(unit?.direction);return Number.isInteger(value)?((value%4)+4)%4:unit?.axis==='y'?1:0;}
 export function rackAxis(unit){return rackDirection(unit)%2?'y':'x';}
