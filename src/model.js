@@ -1,4 +1,5 @@
 export const colors=['#ff6666','#66cc66','#6699ff','#fb60fc','#ffa500','#8a2be2'];
+export const MAX_GRID_SIZE=125;
 export const code=r=>`${r.PLANT}_${r.ROW}_${String(r.BAY).padStart(2,'0')}_${r.LEVEL}_${r.SIDE}`;
 export const levelColor=(l,palette=colors)=>palette[Number(l)-1]||'#a0a0a0';
 const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
@@ -13,8 +14,11 @@ export function topPoint(gx,gy,size,rotation){const [rx,ry]=rotatePoint(gx,gy,si
 export function gridAtTopPoint(x,y,size,rotation){const [gx,gy]=unrotatePoint(Math.round((x-45)/42),Math.round((y-45)/42),size,rotation);return {gx,gy};}
 export function finiteGridCell(cell,size){const gx=Math.floor(Number(cell?.gx)),gy=Math.floor(Number(cell?.gy));return Number.isFinite(gx)&&Number.isFinite(gy)&&gx>=0&&gy>=0&&gx<size&&gy<size?{gx,gy}:null;}
 export function zoomTargetCorrection(before,after){return {x:Number(before.x)-Number(after.x),z:Number(before.z)-Number(after.z)};}
-export function clampRackZoom(value){return Math.max(.5,Math.min(2,Number(value)||1));}
+export function rackZoomBounds(gridSize=14){const size=Math.max(1,Number(gridSize)||14);return {min:Math.min(.5,7/size),max:Math.max(2,size/7)};}
+export function clampRackZoom(value,gridSize=14){const bounds=rackZoomBounds(gridSize);return Math.max(bounds.min,Math.min(bounds.max,Number(value)||1));}
 export function rackColumns(unit){let enabled=false;for(let level=1;level<=Math.max(1,Number(unit?.levels)||1);level++){const capacity=Number(unit?.capacities?.[level]??2);if(capacity>0)enabled=true;if(capacity===2)return 2;}return enabled?1:1;}
+export function rackVisualBins(capacity){const columns=Number(capacity)===2?[-.46,.46]:Number(capacity)===1?[0]:[];return columns.flatMap(x=>[0,1].map(row=>({x,row})));}
+export function rackLabelWidth(){return 1.68;}
 export function rackDirection(unit){const value=Number(unit?.direction);return Number.isInteger(value)?((value%4)+4)%4:unit?.axis==='y'?1:0;}
 export function rackAxis(unit){return rackDirection(unit)%2?'y':'x';}
 export function unitFootprint(unit){const count=rackColumns(unit),axis=rackAxis(unit);return Array.from({length:count},(_,i)=>({gx:Number(unit.gx)+(axis==='x'?i:0),gy:Number(unit.gy)+(axis==='y'?i:0)}));}
