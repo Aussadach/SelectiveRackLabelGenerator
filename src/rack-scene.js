@@ -20,7 +20,7 @@ function addBox(group,w,h,d,x,y,z,role){const mesh=box(w,h,d,role);mesh.position
 function brace(group,a,b){const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),delta=end.clone().sub(start),mesh=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,delta.length(),8),materials.normal.brace);mesh.userData.role='brace';mesh.position.copy(start).add(end).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());group.add(mesh);}
 function taperedBinGeometry(topWidth,bottomWidth,height,depth){const tw=topWidth/2,bw=bottomWidth/2,d=depth/2,y=height/2,v=[-bw,-y,-d,bw,-y,-d,bw,-y,d,-bw,-y,d,-tw,y,-d,tw,y,-d,tw,y,d,-tw,y,d],indices=[0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7,4,5,6,4,6,7,0,3,2,0,2,1],g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex(indices);g.computeVertexNormals();return g;}
 function addBins(group,bins,width=.78,height=.46){
-  if(!bins.length)return;
+  if(!bins.length)return [];
   const depth=.64,dummy=new THREE.Object3D(),body=new THREE.InstancedMesh(taperedBinGeometry(width,width*.8,height,depth),materials.normal.bin,bins.length),lid=new THREE.InstancedMesh(new THREE.BoxGeometry(width+.04,.065,depth+.04),materials.normal.lid,bins.length),feet=new THREE.InstancedMesh(new THREE.BoxGeometry(width*.15,.08,depth*.72),materials.normal.bin,bins.length*3);
   for(const mesh of [body,lid,feet]){mesh.userData.role=mesh===lid?'lid':'bin';mesh.userData.binBatch=true;group.add(mesh);}
   bins.forEach((bin,index)=>{
@@ -29,6 +29,7 @@ function addBins(group,bins,width=.78,height=.46){
     for(const [footIndex,offset] of [-.3,0,.3].entries()){dummy.position.set(bin.x+offset*width,bin.y+.04,0);dummy.updateMatrix();feet.setMatrixAt(index*3+footIndex,dummy.matrix);}
   });
   for(const mesh of [body,lid,feet])mesh.instanceMatrix.needsUpdate=true;
+  return [body,lid,feet];
 }
 function addGuard(group,x,z){addBox(group,.16,.36,.16,x,.2,z,'guard');for(const y of [.1,.22,.34]){const stripe=addBox(group,.17,.045,.171,x,y,z,'stripe');stripe.rotation.z=.35;}}
 function addLabel(group,text,height){const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128;const context=canvas.getContext('2d');context.fillStyle='#0d2940';context.fillRect(3,3,506,122);context.strokeStyle='#8eeadd';context.lineWidth=7;context.strokeRect(3,3,506,122);context.fillStyle='#ffffff';context.font='800 72px system-ui';context.textAlign='center';context.textBaseline='middle';context.fillText(text,256,67);const texture=new THREE.CanvasTexture(canvas),spriteWidth=rackLabelWidth(),sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false}));sprite.position.set(0,height+.24,0);sprite.scale.set(spriteWidth,spriteWidth/4,1);sprite.renderOrder=20;group.add(sprite);}
@@ -38,10 +39,10 @@ function rackGroup(unit,stateName='normal'){
   for(const x of [-width/2,width/2])for(const z of [-depth/2,depth/2]){addBox(group,.09,height,.09,x,height/2,z,'post');addBox(group,.18,.04,.18,x,.02,z,'plate');}
   for(const z of [-depth/2,depth/2])addBox(group,width,.13,.1,0,.16,z,'beam');
   for(const x of [-width/2,width/2]){brace(group,[x,.22,-depth/2],[x,height-.16,depth/2]);brace(group,[x,.22,depth/2],[x,height-.16,-depth/2]);}
-  addBins(group,rackBinPlacements(unit,levelPitch));
+  const binMeshes=addBins(group,rackBinPlacements(unit,levelPitch));
   for(const x of [-width/2,width/2])for(const z of [-depth/2,depth/2])addGuard(group,x,z);
   addFrontMarker(group,depth);
-  const hitbox=new THREE.Mesh(new THREE.BoxGeometry(width,height,depth),hitMaterial);hitbox.position.y=height/2;hitbox.userData.unitId=unit.id;group.userData.hitbox=hitbox;group.add(hitbox);
+  const hitbox=new THREE.Mesh(new THREE.BoxGeometry(width,.28,depth),hitMaterial);hitbox.position.y=.16;hitbox.userData.unitId=unit.id;for(const mesh of binMeshes.slice(0,2))mesh.userData.unitId=unit.id;group.userData.hitTargets=[...binMeshes.slice(0,2),hitbox];group.add(hitbox);
   if(unit.id!=='preview')addLabel(group,`${unit.row}-${String(unit.bay).padStart(2,'0')}`,height);
   group.rotation.y=rackDirection(unit)*Math.PI/2;
   const cells=unitFootprint(unit),center=cells.reduce((sum,c)=>({x:sum.x+c.gx+.5,z:sum.z+c.gy+.5}),{x:0,z:0});group.position.set(center.x/cells.length,0,center.z/cells.length);applyRackState(group,stateName);return group;
@@ -56,7 +57,7 @@ export function createRackScene(container,{state,view='iso',rotation=0,zoom=1,ca
   const unitGroups=new Map(),pathMeshes=new Map();let selectedSet=new Set(selectedUnits),selectedPathSet=new Set(selectedPaths),hitTargets=[],sceneSnapshot=rackSceneSnapshot(state.units,state.paths);
   function addPath(path){const key=`${path.gx},${path.gy}`,mesh=addBox(root,.94,.05,.94,path.gx+.5,.015,path.gy+.5,'beam');mesh.material=selectedPathSet.has(key)?sceneMaterials.pathActive:sceneMaterials.path;mesh.userData.pathKey=key;pathMeshes.set(key,mesh);}
   function addUnit(unit){const group=rackGroup(unit,rackVisualState(unit,state.paths,selectedSet.has(unit.id)));root.add(group);unitGroups.set(unit.id,group);}
-  function rebuildHitTargets(){hitTargets=[...unitGroups.values()].map(group=>group.userData.hitbox).filter(Boolean).concat([...pathMeshes.values()]);}
+  function rebuildHitTargets(){hitTargets=[...unitGroups.values()].flatMap(group=>group.userData.hitTargets??[]).concat([...pathMeshes.values()]);}
   for(const path of state.paths)addPath(path);for(const unit of state.units)addUnit(unit);rebuildHitTargets();
   cameraState.targetX=Number.isFinite(cameraState.targetX)?cameraState.targetX:center;cameraState.targetZ=Number.isFinite(cameraState.targetZ)?cameraState.targetZ:center;cameraState.zoom=clampRackZoom(cameraState.zoom??zoom,state.gridSize);
   function configureCamera(){const w=Math.max(1,container.clientWidth),h=Math.max(1,container.clientHeight),aspect=w/h,size=(state.gridSize+4)/cameraState.zoom,targetX=cameraState.targetX,targetZ=cameraState.targetZ;camera.left=-size*aspect/2;camera.right=size*aspect/2;camera.top=size/2;camera.bottom=-size/2;camera.near=.1;camera.far=200;if(view==='top'){camera.position.set(targetX,40,targetZ);const ups=[[0,0,-1],[-1,0,0],[0,0,1],[1,0,0]][rotation];camera.up.set(...ups);}else{const angle=(45+rotation*90)*Math.PI/180,d=28;camera.position.set(targetX+Math.cos(angle)*d,20,targetZ+Math.sin(angle)*d);camera.up.set(0,1,0);}camera.lookAt(targetX,0,targetZ);camera.updateProjectionMatrix();renderer.setSize(w,h,false);renderer.render(scene,camera);}
