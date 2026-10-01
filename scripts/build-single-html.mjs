@@ -12,13 +12,19 @@ export async function inlineViteHtml(html,readAsset){
   const links=[...output.matchAll(/<link\b[^>]*>/gi)].map(match=>match[0]);
   for(const tag of links){
     const href=attribute(tag,'href'),rel=attribute(tag,'rel').toLowerCase();
-    if(rel==='stylesheet'&&href&&localAsset(href))output=output.replace(tag,`<style data-offline-source="${href}">${safeStyle(await readAsset(href))}</style>`);
+    if(rel==='stylesheet'&&href&&localAsset(href)){
+      const replacement=`<style data-offline-source="${href}">${safeStyle(await readAsset(href))}</style>`;
+      output=output.replace(tag,()=>replacement);
+    }
     else if(rel==='modulepreload'&&href&&localAsset(href))output=output.replace(tag,'');
   }
   const scripts=[...output.matchAll(/<script\b[^>]*\bsrc=["'][^"']+["'][^>]*><\/script>/gi)].map(match=>match[0]);
   for(const tag of scripts){
     const src=attribute(tag,'src');
-    if(src&&localAsset(src))output=output.replace(tag,`<script data-offline-source="${src}">${safeScript(await readAsset(src))}</script>`);
+    if(src&&localAsset(src)){
+      const replacement=`<script data-offline-source="${src}">${safeScript(await readAsset(src))}</script>`;
+      output=output.replace(tag,()=>replacement);
+    }
   }
   const documentShell=output.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'');
   if(/(?:src|href)=["'](?:\.\/)?assets\//i.test(documentShell))throw Error('Single HTML ยังมี asset ภายนอกที่ไม่ได้ฝัง');
