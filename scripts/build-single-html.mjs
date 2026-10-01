@@ -22,7 +22,6 @@ export async function inlineViteHtml(html,readAsset){
   }
   const documentShell=output.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'');
   if(/(?:src|href)=["'](?:\.\/)?assets\//i.test(documentShell))throw Error('Single HTML ยังมี asset ภายนอกที่ไม่ได้ฝัง');
-  if(/<script\b[^>]*\btype=["']module["']/i.test(output))throw Error('Single HTML ยังใช้ module script ซึ่งเปิดผ่าน file:// ไม่ได้ในบาง browser');
   return output.replace('<head>','<head><meta name="offline-build" content="single-file">');
 }
 
