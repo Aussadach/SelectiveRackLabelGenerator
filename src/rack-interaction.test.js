@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {clearRackPointerSession} from './rack-interaction.js';
+import {clearRackPointerSession,clearRackSelectionNow} from './rack-interaction.js';
 import {rackRenderStats} from './rack-render-plan.js';
 
 test('ending a rack gesture removes every transient pointer handler',()=>{
@@ -9,6 +9,12 @@ test('ending a rack gesture removes every transient pointer handler',()=>{
   assert.equal(host.onpointermove,null);
   assert.equal(host.onpointerup,null);
   assert.equal(host.onpointercancel,null);
+});
+
+test('clicking an empty grid clears and applies rack selection immediately',()=>{
+  let applied=null;
+  clearRackSelectionNow((unitIds,pathKeys)=>{applied={unitIds,pathKeys};});
+  assert.deepEqual(applied,{unitIds:[],pathKeys:[]});
 });
 
 test('a tall L/R rack batches all repeated bins into three instanced meshes',()=>{

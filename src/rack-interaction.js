@@ -4,3 +4,7 @@ export function clearRackPointerSession(host){
   host.onpointerup=null;
   host.onpointercancel=null;
 }
+
+export function clearRackSelectionNow(applySelection){
+  applySelection([],[]);
+}
