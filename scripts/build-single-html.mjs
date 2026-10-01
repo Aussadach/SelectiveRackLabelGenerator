@@ -23,7 +23,9 @@ export async function inlineViteHtml(html,readAsset){
     const src=attribute(tag,'src');
     if(src&&localAsset(src)){
       const replacement=`<script data-offline-source="${src}">${safeScript(await readAsset(src))}</script>`;
-      output=output.replace(tag,()=>replacement);
+      output=output.replace(tag,'');
+      if(!/<\/body>/i.test(output))throw Error('Single HTML ไม่มี body สำหรับวาง offline script');
+      output=output.replace(/<\/body>/i,()=>`${replacement}</body>`);
     }
   }
   const documentShell=output.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'');
