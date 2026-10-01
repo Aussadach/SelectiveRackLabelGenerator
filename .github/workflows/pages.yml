@@ -27,6 +27,10 @@ jobs:
         run: |
           test -s dist/RackLabelStudio-Offline.html
           grep -q 'name="offline-build" content="single-file"' dist/RackLabelStudio-Offline.html
+          if grep -qi 'type="module"' dist/RackLabelStudio-Offline.html; then
+            echo 'Offline HTML must not contain module scripts because file:// may block them.'
+            exit 1
+          fi
       - name: Upload offline HTML download
         uses: actions/upload-artifact@v4
         with:

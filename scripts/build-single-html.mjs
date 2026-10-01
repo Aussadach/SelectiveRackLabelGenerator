@@ -18,10 +18,11 @@ export async function inlineViteHtml(html,readAsset){
   const scripts=[...output.matchAll(/<script\b[^>]*\bsrc=["'][^"']+["'][^>]*><\/script>/gi)].map(match=>match[0]);
   for(const tag of scripts){
     const src=attribute(tag,'src');
-    if(src&&localAsset(src))output=output.replace(tag,`<script type="module" data-offline-source="${src}">${safeScript(await readAsset(src))}</script>`);
+    if(src&&localAsset(src))output=output.replace(tag,`<script data-offline-source="${src}">${safeScript(await readAsset(src))}</script>`);
   }
   const documentShell=output.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'');
   if(/(?:src|href)=["'](?:\.\/)?assets\//i.test(documentShell))throw Error('Single HTML ยังมี asset ภายนอกที่ไม่ได้ฝัง');
+  if(/<script\b[^>]*\btype=["']module["']/i.test(output))throw Error('Single HTML ยังใช้ module script ซึ่งเปิดผ่าน file:// ไม่ได้ในบาง browser');
   return output.replace('<head>','<head><meta name="offline-build" content="single-file">');
 }
 
