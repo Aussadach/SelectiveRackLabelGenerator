@@ -2,7 +2,7 @@
 
 Static web application สำหรับออกแบบผัง Selective Rack, สร้างรหัส Location และออกแบบป้าย QR/Barcode โดยทำงานใน browser ทั้งหมด ข้อมูลและรูปภาพของผู้ใช้ไม่ถูกส่งไป backend.
 
-ใช้งานเวอร์ชันล่าสุดได้ที่ [GitHub Pages](https://aussadach.github.io/SelectiveRackLabelGenerator/).
+ใช้งานเวอร์ชันล่าสุดได้ที่ [GitHub Pages](https://aussadach.github.io/SelectiveRackLabelGenerator/) หรือดาวน์โหลด [RackLabelStudio-Offline.html](https://aussadach.github.io/SelectiveRackLabelGenerator/RackLabelStudio-Offline.html) เพื่อเปิดใช้งานแบบ Offline โดยไม่ต้องติดตั้งโปรแกรม.
 
 ## ความสามารถหลัก
 
@@ -49,7 +49,7 @@ npm test
 npm run build
 ```
 
-ไฟล์ static ที่ build แล้วอยู่ใน `dist/`. แอปต้องเปิดผ่าน HTTP server เช่น Vite หรือ GitHub Pages.
+ไฟล์ static ที่ build แล้วอยู่ใน `dist/`. คำสั่ง build จะสร้าง `dist/RackLabelStudio-Offline.html` เพิ่มอีกหนึ่งไฟล์ โดยฝัง JavaScript, CSS และ asset ทั้งหมดไว้ภายใน จึงคัดลอกไฟล์เดียวไปเปิดใน browser แบบ Offline ได้ ส่วน `dist/index.html` ใช้ผ่าน HTTP server เช่น Vite หรือ GitHub Pages.
 
 ## โครงสร้าง Repository
 
@@ -57,6 +57,8 @@ npm run build
 .
 ├── .github/workflows/pages.yml  # Test, build และ deploy GitHub Pages
 ├── examples/                    # CSV ตัวอย่างสำหรับ regression test
+├── scripts/
+│   └── build-single-html.mjs    # รวมผล Vite build เป็น Offline HTML ไฟล์เดียว
 ├── src/
 │   ├── main.js                  # UI, state และ interaction
 │   ├── model.js                 # Rack/location model และ validation
@@ -94,5 +96,7 @@ Excel แบบ SubPlant ใช้ชื่อ Sheet `Sheet1` และเรี
 ## การ Deploy
 
 Workflow [pages.yml](.github/workflows/pages.yml) ทำงานเมื่อ push ไปที่ `master` หรือ `main` โดยติดตั้ง dependency, รัน test, build และ deploy โฟลเดอร์ `dist/` ไป GitHub Pages.
+
+ไฟล์ Offline ถูกเผยแพร่ไว้ที่ URL คงที่บน GitHub Pages และแนบเป็น Actions artifact ชื่อ `RackLabelStudio-Offline` ในแต่ละ workflow run ด้วย ปุ่ม **Offline HTML** ที่ส่วนหัวของแอปจะดาวน์โหลดไฟล์นี้โดยตรง.
 
 ข้อมูล Rack, CSV/Excel, รูปภาพ และไฟล์ JSON ถูกประมวลผลภายใน browser. ควรบันทึกไฟล์งาน JSON ก่อนปิดหน้า เพราะแอปไม่มี autosave หรือฐานข้อมูล.
